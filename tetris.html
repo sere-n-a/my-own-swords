@@ -204,14 +204,44 @@
   }
   .status-bar.warn { color:#d4887a; }
   .status-bar.good { color:var(--accent-deep); }
+
+  /* bilingual text */
+  .zh { display:block; font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif; }
+  .en { display:block; font-size:0.78em; color:var(--muted); letter-spacing:0.04em; margin-top:1px; }
+  .hint-box .en { font-size:0.9em; }
+
+  header h1 .zh { font-family:'Lora',serif; font-style:italic; }
+  header h1 .en { font-family:'Lora',serif; font-style:italic; font-size:0.62em; color:var(--muted); margin-top:2px; letter-spacing:0.02em; }
+
+  header p { display:none; } /* replaced by h1 bilingual */
+
+  .score-box .label .zh { font-size:1em; }
+  .score-box .label .en { font-size:0.85em; }
+
+  .hint-box .hint-title .zh { font-size:1em; }
+  .hint-box .hint-title .en { font-size:0.88em; color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0.06em; }
+
+  .overlay h2 .zh { font-family:'Lora',serif; font-style:italic; }
+  .overlay h2 .en { font-family:'Lora',serif; font-style:italic; font-size:0.65em; color:var(--muted); margin-top:3px; }
+
+  .overlay .sub .zh { display:block; }
+  .overlay .sub .en { font-size:0.9em; }
+
+  .btn-start .zh { font-size:1em; }
+  .btn-start .en { font-size:0.8em; opacity:0.8; }
+
+  .btn-play-again .zh { font-size:1em; }
+  .btn-play-again .en { font-size:0.8em; opacity:0.8; }
 </style>
 </head>
 <body>
 
 <div class="wrapper">
   <header>
-    <h1>My Tetris</h1>
-    <p>The rules were never real</p>
+    <h1>
+      <span class="zh">我的俄罗斯方块</span>
+      <span class="en">My Tetris — Break The Rules</span>
+    </h1>
   </header>
 
   <div class="game-area">
@@ -221,15 +251,27 @@
 
     <div class="panel">
       <div class="score-box">
-        <div class="label">Score</div>
+        <div class="label">
+          <span class="zh">得分</span>
+          <span class="en">Score</span>
+        </div>
         <div class="value" id="scoreDisplay">0</div>
       </div>
 
       <div class="hint-box">
-        <div class="hint-title">Rules</div>
-        <span class="bad">−10</span> clear a line<br>
-        <span class="good">Fill to top</span><br>
-        to break free
+        <div class="hint-title">
+          <span class="zh">规则</span>
+          <span class="en">Rules</span>
+        </div>
+        <span class="bad">−10</span>
+        <span class="zh" style="font-size:0.95em">消除一行</span>
+        <span class="en">clear a line</span>
+        <span class="good" style="margin-top:4px">
+          <span class="zh">堆满顶端</span>
+          <span class="en">fill to top</span>
+        </span>
+        <span class="zh" style="font-size:0.9em;color:var(--muted)">才能突破自由</span>
+        <span class="en">to break free</span>
       </div>
 
       <div class="dpad">
@@ -244,8 +286,13 @@
         <div class="dpad-btn empty"></div>
       </div>
 
-      <button class="btn-start" id="btnStart">Start</button>
-      <div class="status-bar" id="statusBar">Press start</div>
+      <button class="btn-start" id="btnStart">
+        <span class="zh">开始游戏</span>
+        <span class="en">Start</span>
+      </button>
+      <div class="status-bar" id="statusBar">
+        <span class="zh">按开始游戏</span>
+      </div>
     </div>
   </div>
 </div>
