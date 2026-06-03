@@ -7,15 +7,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Lora:ital,wght@1,700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #e8f5f0;
+    --bg: #f5f9fd;
     --surface: #ffffff;
-    --border: #b8dece;
-    --accent: #5bbf8a;
-    --accent2: #f9a86c;
-    --accent3: #7ec8e3;
-    --text: #3a4a42;
-    --muted: #8aab99;
-    --glow: rgba(91,191,138,0.22);
+    --border: #d0e8f5;
+    --accent: #a8d4f0;
+    --accent-deep: #6bb8e8;
+    --accent2: #f5dfa8;
+    --accent2-deep: #e8c46a;
+    --accent3: #f0e0c8;
+    --text: #4a6070;
+    --muted: #90afc0;
+    --glow: rgba(168,212,240,0.30);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -37,9 +39,9 @@
     position:fixed; top:-50%; left:-50%;
     width:200%; height:200%;
     background:
-      radial-gradient(ellipse at 20% 15%, rgba(126,200,227,0.20) 0%, transparent 45%),
-      radial-gradient(ellipse at 80% 85%, rgba(247,197,208,0.18) 0%, transparent 45%),
-      radial-gradient(ellipse at 55% 40%, rgba(91,191,138,0.10) 0%, transparent 40%);
+      radial-gradient(ellipse at 20% 15%, rgba(168,212,240,0.18) 0%, transparent 45%),
+      radial-gradient(ellipse at 80% 85%, rgba(245,223,168,0.14) 0%, transparent 45%),
+      radial-gradient(ellipse at 55% 40%, rgba(240,224,200,0.10) 0%, transparent 40%);
     pointer-events:none; z-index:0;
   }
 
@@ -54,7 +56,7 @@
   header h1 {
     font-family:'Lora',serif; font-style:italic;
     font-size:clamp(1.4rem,4vw,2rem);
-    color: var(--accent);
+    color: var(--accent-deep);
     text-shadow: 0 2px 18px var(--glow);
     letter-spacing:-0.01em;
   }
@@ -72,8 +74,8 @@
     display:block;
     border:2px solid var(--border);
     border-radius:14px;
-    box-shadow: 0 6px 28px rgba(91,191,138,0.13), 0 1px 4px rgba(0,0,0,0.04);
-    background:#f2fbf7;
+    box-shadow: 0 6px 28px rgba(168,212,240,0.18), 0 1px 4px rgba(0,0,0,0.04);
+    background:#f8fbff;
   }
 
   .panel { display:flex; flex-direction:column; gap:12px; width:140px; }
@@ -81,15 +83,15 @@
   .score-box {
     background:var(--surface); border:1.5px solid var(--border);
     border-radius:12px; padding:12px; text-align:center;
-    box-shadow:0 2px 8px rgba(91,191,138,0.08);
+    box-shadow:0 2px 8px rgba(168,212,240,0.10);
   }
   .score-box .label {
     font-size:0.55rem; color:var(--muted);
     letter-spacing:0.2em; text-transform:uppercase; margin-bottom:4px;
   }
   .score-box .value {
-    font-size:1.6rem; color:var(--accent2); font-weight:800;
-    text-shadow:0 2px 10px rgba(249,168,108,0.22);
+    font-size:1.6rem; color:var(--accent2-deep); font-weight:800;
+    text-shadow:0 2px 10px rgba(232,196,106,0.28);
   }
 
   .hint-box {
@@ -98,12 +100,12 @@
     font-size:0.58rem; color:var(--muted); line-height:1.8; letter-spacing:0.04em;
   }
   .hint-box .hint-title {
-    color:var(--accent); font-size:0.6rem;
+    color:var(--accent-deep); font-size:0.6rem;
     letter-spacing:0.15em; text-transform:uppercase;
     margin-bottom:5px; font-weight:700;
   }
-  .hint-box .bad  { color:#e8857a; }
-  .hint-box .good { color:var(--accent); font-weight:700; }
+  .hint-box .bad  { color:#d4887a; }
+  .hint-box .good { color:var(--accent-deep); font-weight:700; }
 
   .dpad {
     display:grid;
@@ -119,32 +121,33 @@
     cursor:pointer; display:flex; align-items:center; justify-content:center;
     transition:all 0.1s; user-select:none;
     -webkit-tap-highlight-color:transparent;
-    box-shadow:0 2px 5px rgba(0,0,0,0.06);
+    box-shadow:0 2px 5px rgba(168,212,240,0.12);
   }
   .dpad-btn:active, .dpad-btn.pressed {
-    background:var(--accent); border-color:var(--accent);
+    background:var(--accent-deep); border-color:var(--accent-deep);
     color:#fff; transform:scale(0.92); box-shadow:none;
   }
   .dpad-btn.empty { background:transparent; border:none; pointer-events:none; box-shadow:none; }
 
   .btn-start {
-    background:var(--accent); border:none; border-radius:10px;
+    background: linear-gradient(135deg, var(--accent-deep), #8ecce8);
+    border:none; border-radius:10px;
     color:#fff; font-family:'Nunito',sans-serif; font-weight:800;
     font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase;
     padding:10px; cursor:pointer; width:100%; transition:all 0.2s;
-    box-shadow:0 3px 12px rgba(91,191,138,0.28);
+    box-shadow:0 3px 12px rgba(107,184,232,0.28);
   }
   .btn-start:hover {
-    background:#4aae79; transform:translateY(-1px);
-    box-shadow:0 5px 16px rgba(91,191,138,0.35);
+    filter:brightness(1.06); transform:translateY(-1px);
+    box-shadow:0 5px 16px rgba(107,184,232,0.35);
   }
 
   .overlay {
     display:none; position:fixed; inset:0; z-index:100;
-    background:rgba(232,245,240,0.88);
+    background:rgba(245,249,253,0.90);
     align-items:center; justify-content:center;
     flex-direction:column; text-align:center; padding:30px;
-    backdrop-filter:blur(12px);
+    backdrop-filter:blur(14px);
   }
   .overlay.show { display:flex; animation:fadeIn 0.6s ease; }
 
@@ -158,7 +161,7 @@
   .overlay h2 {
     font-family:'Lora',serif; font-style:italic;
     font-size:clamp(1.8rem,6vw,2.8rem);
-    color:var(--accent); text-shadow:0 2px 24px var(--glow);
+    color:var(--accent-deep); text-shadow:0 2px 24px var(--glow);
     margin-bottom:16px; line-height:1.2;
   }
 
@@ -174,13 +177,13 @@
   }
 
   .btn-play-again {
-    background:transparent; border:2px solid var(--accent);
-    border-radius:10px; color:var(--accent);
+    background:transparent; border:2px solid var(--accent-deep);
+    border-radius:10px; color:var(--accent-deep);
     font-family:'Nunito',sans-serif; font-weight:700;
     font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase;
     padding:12px 28px; cursor:pointer; transition:all 0.2s;
   }
-  .btn-play-again:hover { background:var(--accent); color:#fff; }
+  .btn-play-again:hover { background:var(--accent-deep); color:#fff; }
 
   .particles { position:fixed; inset:0; pointer-events:none; z-index:99; }
 
@@ -199,8 +202,8 @@
     letter-spacing:0.08em; text-transform:uppercase;
     text-align:center; height:16px; font-weight:700;
   }
-  .status-bar.warn { color:#e8857a; }
-  .status-bar.good { color:var(--accent); }
+  .status-bar.warn { color:#d4887a; }
+  .status-bar.good { color:var(--accent-deep); }
 </style>
 </head>
 <body>
@@ -265,16 +268,16 @@ const canvas = document.getElementById('gameCanvas');
 const ctx    = canvas.getContext('2d');
 const COLS = 10, ROWS = 20, CELL = 20;
 
-// Macaron pastel block colours
+// Baby blue + cream gold + warm beige block palette
 const COLORS = [
   null,
-  '#f9a8b8', // pink
-  '#a8d8b9', // mint
-  '#93d6e8', // sky
-  '#f9c784', // peach
-  '#c3b1e1', // lavender
-  '#b5ead7', // seafoam
-  '#fde68a'  // lemon
+  '#b8daf5', // soft sky blue
+  '#f5e4b8', // warm cream gold
+  '#c8eaf0', // pale aqua
+  '#f0d4b8', // peachy beige
+  '#d8eaf8', // mist blue
+  '#f5f0d0', // ivory lemon
+  '#e8d0f0'  // barely-there lavender
 ];
 
 const SHAPES = [
@@ -294,6 +297,12 @@ let lastDrop = 0, isFastDrop = false;
 const DROP_NORMAL = 400;
 const DROP_FAST   = 80;
 
+// border colours per block (slightly deeper shade)
+const BORDERS = [
+  null,
+  '#8bbfde','#d4b87a','#90c8d8','#d4a882','#98c0e0','#d0c88a','#b8a8d8'
+];
+
 function initBoard() {
   board = Array.from({length:ROWS}, () => Array(COLS).fill(0));
 }
@@ -306,8 +315,10 @@ function randomPiece() {
 
 function drawCell(x, y, colorIdx, alpha=1) {
   if (!colorIdx) return;
-  const px = x*CELL+1, py = y*CELL+1, pw = CELL-2, ph = CELL-2, r = 4;
+  const px = x*CELL+1, py = y*CELL+1, pw = CELL-2, ph = CELL-2, r = 5;
   ctx.globalAlpha = alpha;
+
+  // fill
   ctx.fillStyle = COLORS[colorIdx];
   ctx.beginPath();
   ctx.moveTo(px+r, py);
@@ -316,12 +327,20 @@ function drawCell(x, y, colorIdx, alpha=1) {
   ctx.lineTo(px+r, py+ph); ctx.quadraticCurveTo(px, py+ph, px, py+ph-r);
   ctx.lineTo(px, py+r); ctx.quadraticCurveTo(px, py, px+r, py);
   ctx.closePath(); ctx.fill();
-  // shine
-  ctx.fillStyle = 'rgba(255,255,255,0.38)';
+
+  // soft border
+  ctx.strokeStyle = BORDERS[colorIdx];
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = alpha * 0.5;
+  ctx.stroke();
+
+  // top shine
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.globalAlpha = alpha;
   ctx.beginPath();
   ctx.moveTo(px+r, py);
   ctx.lineTo(px+pw-r, py); ctx.quadraticCurveTo(px+pw, py, px+pw, py+r);
-  ctx.lineTo(px+pw, py+5); ctx.lineTo(px, py+5);
+  ctx.lineTo(px+pw, py+6); ctx.lineTo(px, py+6);
   ctx.lineTo(px, py+r); ctx.quadraticCurveTo(px, py, px+r, py);
   ctx.closePath(); ctx.fill();
   ctx.globalAlpha = 1;
@@ -329,8 +348,13 @@ function drawCell(x, y, colorIdx, alpha=1) {
 
 function drawBoard() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // warm canvas bg
+  ctx.fillStyle = '#f8fbff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
   // subtle grid
-  ctx.strokeStyle = 'rgba(91,191,138,0.07)';
+  ctx.strokeStyle = 'rgba(168,212,240,0.12)';
   ctx.lineWidth = 0.5;
   for (let r=0;r<ROWS;r++) for (let c=0;c<COLS;c++) ctx.strokeRect(c*CELL, r*CELL, CELL, CELL);
 
@@ -339,7 +363,7 @@ function drawBoard() {
   if (piece) {
     let ghost = {...piece, shape:piece.shape.map(r=>[...r])};
     while (isValid(ghost,0,1)) ghost.y++;
-    ghost.shape.forEach((row,r) => row.forEach((v,c) => { if(v) drawCell(ghost.x+c, ghost.y+r, v, 0.18); }));
+    ghost.shape.forEach((row,r) => row.forEach((v,c) => { if(v) drawCell(ghost.x+c, ghost.y+r, v, 0.20); }));
     piece.shape.forEach((row,r) => row.forEach((v,c) => { if(v) drawCell(piece.x+c, piece.y+r, v); }));
   }
 }
@@ -391,7 +415,7 @@ function triggerWin() {
 function spawnParticles() {
   const container = document.getElementById('particles');
   container.innerHTML = '';
-  const cols = ['#f9a8b8','#a8d8b9','#93d6e8','#f9c784','#c3b1e1','#fde68a'];
+  const cols = ['#b8daf5','#f5e4b8','#c8eaf0','#f0d4b8','#d8eaf8','#f5f0d0'];
   for (let i=0;i<70;i++) {
     const p = document.createElement('div');
     p.className = 'particle';

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena's 小游戏世界</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* 主页：比游戏页更亮更通透，同族色系 */
+  --bg: #eef6fc;
+  --surface: #ffffff;
+  --border: #cce3f2;
+  --sky: #a8d4f0;       /* 淡天蓝 主色 */
+  --sky-deep: #6bb8e8;  /* 天蓝深 */
+  --gold: #f5dfa8;      /* 奶油金 */
+  --gold-deep: #e8c46a;
+  --beige: #f5ede0;     /* 米色暖调 */
+  --text: #4a6070;
+  --muted: #90afc0;
+  --soft: #f8fbff;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse at 15% 15%, rgba(168,212,240,0.16) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 80%, rgba(245,223,168,0.14) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(245,237,224,0.10) 0%, transparent 55%);
+  pointer-events:none;
+}
+
+.wrapper {
+  position:relative; z-index:1;
+  display:flex; flex-direction:column;
+  align-items:center; gap:32px;
+  width:100%; max-width:560px;
+}
+
+/* ── Header ── */
+header {
+  text-align:center;
+  display:flex; flex-direction:column;
+  align-items:center; gap:7px;
+}
+
+.site-label {
+  font-family:'Nunito',sans-serif;
+  font-size:0.62rem; color:var(--muted);
+  letter-spacing:0.22em; text-transform:uppercase; font-weight:600;
+}
+
+header h1 {
+  font-family:'Nunito',sans-serif;
+  font-size:clamp(1.9rem,6vw,2.6rem);
+  font-weight:800;
+  color: var(--sky-deep);
+  letter-spacing:-0.01em; line-height:1.15;
+}
+
+header h1 .wave {
+  display:inline-block;
+  animation:wave 2.8s ease-in-out infinite;
+  transform-origin:70% 70%;
+}
+@keyframes wave {
+  0%,100%{ transform:rotate(-6deg); }
+  50%    { transform:rotate(8deg); }
+}
+
+header p {
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:0.72rem; color:var(--muted);
+  font-weight:400; letter-spacing:0.06em;
+}
+
+/* ── Divider dots ── */
+.trio { display:flex; gap:7px; align-items:center; }
+.trio-dot {
+  width:5px; height:5px; border-radius:50%;
+  animation:triPulse 2.4s ease-in-out infinite;
+}
+.trio-dot:nth-child(1){ background:var(--sky);      animation-delay:0s; }
+.trio-dot:nth-child(2){ background:var(--gold-deep); animation-delay:0.4s; }
+.trio-dot:nth-child(3){ background:#c8b4e0;          animation-delay:0.8s; }
+@keyframes triPulse {
+  0%,100%{ opacity:0.35; transform:scale(1); }
+  50%    { opacity:1;    transform:scale(1.5); }
+}
+
+/* ── Cards ── */
+.cards {
+  display:flex; gap:18px; width:100%;
+  justify-content:center; flex-wrap:wrap;
+}
+
+.card {
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:22px;
+  padding:26px 20px 22px;
+  width:100%; max-width:248px;
+  cursor:pointer; text-decoration:none; color:inherit;
+  transition:all 0.22s ease;
+  display:flex; flex-direction:column;
+  align-items:center; gap:11px;
+  box-shadow: 0 2px 14px rgba(168,212,240,0.12), 0 1px 3px rgba(0,0,0,0.03);
+  position:relative; overflow:hidden;
+}
+
+/* top accent stripe */
+.card::after {
+  content:''; position:absolute;
+  top:0; left:0; right:0; height:3px;
+  border-radius:22px 22px 0 0;
+  opacity:0; transition:opacity 0.22s;
+}
+.card-tetris::after { background:linear-gradient(90deg,#a8d4f0,#f5dfa8); }
+.card-maze::after   { background:linear-gradient(90deg,#f5dfa8,#c8d4f0); }
+
+.card:hover {
+  transform:translateY(-5px);
+  box-shadow: 0 10px 30px rgba(168,212,240,0.18), 0 2px 8px rgba(0,0,0,0.05);
+}
+.card-tetris:hover { border-color:var(--sky); }
+.card-maze:hover   { border-color:var(--gold-deep); }
+.card:hover::after { opacity:1; }
+
+/* preview mini-canvas area — shows block colour palette */
+.card-preview {
+  width:100%; height:52px;
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  gap:5px; padding:0 8px;
+  font-size:0; /* hide fallback text */
+}
+.card-tetris .card-preview { background:#f0f8fd; border:1px solid #dbeef8; }
+.card-maze   .card-preview { background:#fdf8ee; border:1px solid #f0e4c4; }
+
+.mini-block {
+  border-radius:5px;
+  flex-shrink:0;
+}
+
+/* pixel game-id label */
+.card-pixellabel {
+  font-family:'Courier New', monospace;
+  font-size:0.48rem; letter-spacing:0.18em;
+  text-transform:uppercase; padding:2px 9px;
+  border-radius:5px; font-weight:700;
+}
+.card-tetris .card-pixellabel { background:#eaf5fc; color:var(--sky-deep); }
+.card-maze   .card-pixellabel { background:#fdf4e4; color:#c8963a; }
+
+.card-title {
+  font-family:'Nunito',sans-serif;
+  font-size:1.15rem; font-weight:800;
+  text-align:center; letter-spacing:0.01em; line-height:1.3;
+  color:var(--text);
+}
+
+.card-desc {
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:0.64rem; color:var(--muted);
+  text-align:center; line-height:1.95;
+  letter-spacing:0.04em; font-weight:400;
+}
+
+.card-divider {
+  width:28px; height:1.5px; border-radius:2px;
+}
+.card-tetris .card-divider { background:var(--sky); opacity:0.4; }
+.card-maze   .card-divider { background:var(--gold-deep); opacity:0.4; }
+
+.card-btn {
+  font-family:'Nunito',sans-serif;
+  font-size:0.7rem; font-weight:700;
+  letter-spacing:0.08em;
+  padding:8px 22px;
+  border-radius:12px; border:none;
+  cursor:pointer; transition:all 0.18s;
+  margin-top:2px;
+}
+.card-tetris .card-btn {
+  background: linear-gradient(135deg,var(--sky-deep),#8ecce8);
+  color:#fff;
+  box-shadow:0 3px 10px rgba(107,184,232,0.28);
+}
+.card-maze .card-btn {
+  background: linear-gradient(135deg,var(--gold-deep),#f0c870);
+  color:#7a5010;
+  box-shadow:0 3px 10px rgba(232,196,106,0.30);
+}
+.card-btn:hover { filter:brightness(1.07); transform:scale(1.03); }
+
+/* ── Footer ── */
+footer {
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:0.6rem; color:var(--muted);
+  text-align:center; line-height:2.1; letter-spacing:0.05em;
+}
+footer .name  { color:var(--sky-deep); font-weight:700; }
+footer .quote { color:#b0ccd8; }
+
+@media(max-width:400px){
+  .cards { flex-direction:column; align-items:center; }
+  .card  { max-width:100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <header>
+    <div class="site-label">Serena's Game World</div>
+    <h1><span class="wave">🎮</span> 小游戏世界</h1>
+    <p>每一关，都藏着一句想对你说的话</p>
+  </header>
+
+  <div class="trio">
+    <div class="trio-dot"></div>
+    <div class="trio-dot"></div>
+    <div class="trio-dot"></div>
+  </div>
+
+  <div class="cards">
+
+    <!-- Tetris card — preview shows actual block colours from the game -->
+    <a class="card card-tetris" href="tetris.html">
+      <div class="card-preview" aria-hidden="true">
+        <!-- row 1: four blocks -->
+        <svg width="100%" height="100%" viewBox="0 0 160 52" xmlns="http://www.w3.org/2000/svg">
+          <!-- bottom row placed blocks -->
+          <rect x="4"  y="30" width="18" height="18" rx="4" fill="#b8daf5" stroke="#8bbfde" stroke-width="0.8"/>
+          <rect x="26" y="30" width="18" height="18" rx="4" fill="#f5e4b8" stroke="#d4b87a" stroke-width="0.8"/>
+          <rect x="48" y="30" width="18" height="18" rx="4" fill="#c8eaf0" stroke="#90c8d8" stroke-width="0.8"/>
+          <rect x="70" y="30" width="18" height="18" rx="4" fill="#f0d4b8" stroke="#d4a882" stroke-width="0.8"/>
+          <rect x="92" y="30" width="18" height="18" rx="4" fill="#d8eaf8" stroke="#98c0e0" stroke-width="0.8"/>
+          <rect x="114" y="30" width="18" height="18" rx="4" fill="#f5f0d0" stroke="#d0c88a" stroke-width="0.8"/>
+          <rect x="136" y="30" width="18" height="18" rx="4" fill="#e8d0f0" stroke="#b8a8d8" stroke-width="0.8"/>
+          <!-- falling piece -->
+          <rect x="70" y="6"  width="18" height="18" rx="4" fill="#b8daf5" stroke="#8bbfde" stroke-width="0.8" opacity="0.7"/>
+          <rect x="92" y="6"  width="18" height="18" rx="4" fill="#b8daf5" stroke="#8bbfde" stroke-width="0.8" opacity="0.7"/>
+          <!-- shines -->
+          <rect x="5"  y="31" width="16" height="4" rx="2" fill="white" opacity="0.45"/>
+          <rect x="27" y="31" width="16" height="4" rx="2" fill="white" opacity="0.45"/>
+          <rect x="49" y="31" width="16" height="4" rx="2" fill="white" opacity="0.45"/>
+          <rect x="71" y="31" width="16" height="4" rx="2" fill="white" opacity="0.45"/>
+        </svg>
+      </div>
+      <div class="card-pixellabel">GAME 01</div>
+      <div class="card-title">我的俄罗斯方块</div>
+      <div class="card-divider"></div>
+      <div class="card-desc">填满，还是消除？<br>规则从来不止一种。</div>
+      <button class="card-btn">▶ 开始游戏</button>
+    </a>
+
+    <!-- Maze card -->
+    <a class="card card-maze" href="maze.html">
+      <div class="card-preview" aria-hidden="true">
+        <svg width="100%" height="100%" viewBox="0 0 160 52" xmlns="http://www.w3.org/2000/svg">
+          <!-- mini maze walls in warm gold-teal tones -->
+          <rect x="4"  y="4"  width="152" height="44" rx="6" fill="#fdf6e8" stroke="#ead8a8" stroke-width="1"/>
+          <!-- walls -->
+          <rect x="10" y="10" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="24" y="10" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="38" y="10" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="52" y="10" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="66" y="10" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="80" y="10" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="10" y="24" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="38" y="24" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="66" y="24" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="10" y="38" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="24" y="38" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <rect x="38" y="38" width="10" height="10" rx="2" fill="#d4b87a" opacity="0.7"/>
+          <!-- player fish -->
+          <text x="52" y="36" font-size="12" text-anchor="middle">🐠</text>
+          <!-- exit -->
+          <text x="130" y="48" font-size="11" text-anchor="middle">🌺</text>
+          <!-- flight hint -->
+          <text x="118" y="20" font-size="14" text-anchor="middle" opacity="0.6">🦋</text>
+        </svg>
+      </div>
+      <div class="card-pixellabel">GAME 02</div>
+      <div class="card-title">我的迷宫</div>
+      <div class="card-divider"></div>
+      <div class="card-desc">走出去，或者飞出去。<br>迷宫的墙没有那么高。</div>
+      <button class="card-btn">▶ 开始游戏</button>
+    </a>
+
+  </div>
+
+  <footer>
+    由 <span class="name">Serena</span> 亲手创作<br>
+    <span class="quote">限制，从来没有我们想象中那么真实</span>
+  </footer>
+
+</div>
+</body>
+</html>

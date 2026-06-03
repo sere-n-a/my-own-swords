@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>我的迷宫</title>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1f2d;
+  --surface: #162535;
+  --border: #1e3a4a;
+  --wall1: #1a7a6e;
+  --wall2: #0fa88f;
+  --floor: #0a1a28;
+  --accent: #00e5c0;
+  --accent2: #ffb347;
+  --accent3: #ff6b6b;
+  --accent4: #7dd3fc;
+  --text: #e0f7f4;
+  --muted: #4a8fa0;
+  --glow: rgba(0,229,192,0.25);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height:100%;
+  background: var(--bg);
+  font-family: 'Noto Sans SC', sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  touch-action: none;
+}
+
+body {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse at 15% 15%, rgba(0,229,192,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 85%, rgba(255,179,71,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(125,211,252,0.04) 0%, transparent 60%);
+  pointer-events:none; z-index:0;
+}
+
+.wrapper {
+  position:relative; z-index:1;
+  display:flex; flex-direction:column;
+  align-items:center;
+  gap:10px;
+  padding:12px;
+  width:100%;
+  max-width:520px;
+}
+
+header { text-align:center; }
+
+header h1 {
+  font-family:'Ma Shan Zheng', cursive;
+  font-size:clamp(1.4rem,5vw,1.9rem);
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--glow), 0 0 40px rgba(0,229,192,0.15);
+  letter-spacing:0.08em;
+}
+
+header p {
+  font-size:0.58rem; color:var(--muted);
+  letter-spacing:0.14em; margin-top:2px;
+}
+
+.game-area {
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  width:100%;
+  justify-content:center;
+}
+
+/* Canvas wrapper — scales on mobile */
+.canvas-wrap {
+  flex-shrink:0;
+  position:relative;
+}
+
+canvas {
+  display:block;
+  border:2px solid var(--accent);
+  border-radius:12px;
+  box-shadow: 0 0 0 1px rgba(0,229,192,0.15), 0 0 30px rgba(0,229,192,0.12);
+  image-rendering: pixelated;
+}
+
+/* Panel */
+.panel {
+  display:flex; flex-direction:column;
+  gap:10px;
+  flex:1;
+  min-width:0;
+  max-width:150px;
+}
+
+.info-box {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:9px 10px;
+  font-size:0.56rem;
+  color:var(--muted);
+  line-height:1.85;
+  letter-spacing:0.04em;
+}
+
+.info-box .title {
+  font-weight:700; color:var(--accent);
+  font-size:0.6rem; letter-spacing:0.1em;
+  margin-bottom:4px; display:block;
+}
+
+.triggers-box {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:9px 10px;
+  font-size:0.54rem; color:var(--muted);
+  line-height:1.9; letter-spacing:0.03em;
+}
+.triggers-box .title {
+  font-weight:700; color:var(--accent2);
+  font-size:0.58rem; margin-bottom:4px; display:block;
+}
+.trigger-row { display:flex; align-items:center; gap:5px; }
+.trigger-dot {
+  width:6px; height:6px; border-radius:50%;
+  background: var(--border); flex-shrink:0;
+  transition: background 0.4s, box-shadow 0.4s;
+}
+.trigger-dot.active { background:var(--accent); box-shadow:0 0 6px rgba(0,229,192,0.6); }
+
+/* D-pad */
+.dpad {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(3,1fr);
+  gap:4px;
+  align-self:center;
+  width:100%;
+  aspect-ratio: 1;
+  max-width:130px;
+}
+
+.dpad-btn {
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:10px;
+  color:var(--text); font-size:1.1rem;
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.1s; user-select:none;
+  min-height:38px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.dpad-btn:active, .dpad-btn.pressed {
+  background: var(--accent);
+  border-color:var(--accent);
+  color:#000; transform:scale(0.90);
+  box-shadow:0 0 12px rgba(0,229,192,0.4);
+}
+
+.dpad-btn.charging {
+  border-color: var(--accent2);
+  animation: chargeAnim 0.3s ease infinite alternate;
+}
+@keyframes chargeAnim {
+  from { box-shadow: 0 0 4px rgba(255,179,71,0.3); background: var(--surface); }
+  to   { box-shadow: 0 0 18px rgba(255,179,71,0.7); background: #1f2e1a; }
+}
+
+.dpad-btn.empty {
+  background:transparent; border:none;
+  pointer-events:none; box-shadow:none;
+}
+
+.btn-restart {
+  background: linear-gradient(135deg, #00b894, #00e5c0);
+  border:none; border-radius:10px;
+  color:#0d1f2d; font-family:'Noto Sans SC',sans-serif;
+  font-weight:700; font-size:0.68rem;
+  letter-spacing:0.08em;
+  padding:9px; cursor:pointer; width:100%;
+  transition:all 0.2s;
+  box-shadow:0 3px 14px rgba(0,229,192,0.3);
+}
+.btn-restart:hover { filter:brightness(1.1); transform:translateY(-1px); }
+
+.status-bar {
+  font-size:0.56rem; color:var(--muted);
+  text-align:center; min-height:16px;
+  letter-spacing:0.06em; font-weight:700;
+  transition:color 0.3s;
+}
+.status-bar.good { color:var(--accent); }
+.status-bar.warn { color:var(--accent2); }
+.status-bar.fly  { color:var(--accent3); }
+
+/* Steps counter */
+.steps-box {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px; padding:7px 10px;
+  text-align:center;
+}
+.steps-box .slabel { font-size:0.52rem; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; }
+.steps-box .sval { font-size:1.3rem; font-weight:700; color:var(--accent2); text-shadow:0 0 12px rgba(255,179,71,0.3); }
+
+/* ── Overlays ── */
+.overlay {
+  display:none; position:fixed; inset:0; z-index:100;
+  background:rgba(10,26,40,0.92);
+  align-items:center; justify-content:center;
+  flex-direction:column; text-align:center;
+  padding:24px;
+  backdrop-filter:blur(14px);
+}
+.overlay.show { display:flex; animation:fadeIn 0.6s ease; }
+@keyframes fadeIn {
+  from { opacity:0; transform:scale(0.93) translateY(8px); }
+  to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+.overlay-inner { max-width:380px; width:100%; }
+
+.overlay .big-emoji {
+  font-size:3.2rem; margin-bottom:10px;
+  animation:floatEmoji 2.2s ease-in-out infinite;
+}
+@keyframes floatEmoji {
+  0%,100% { transform:translateY(0) rotate(-3deg); }
+  50%     { transform:translateY(-12px) rotate(3deg); }
+}
+
+.overlay h2 {
+  font-family:'Ma Shan Zheng',cursive;
+  font-size:clamp(1.6rem,5vw,2.1rem);
+  margin-bottom:10px; line-height:1.2;
+}
+
+.overlay p {
+  font-size:clamp(0.8rem,2.5vw,0.95rem);
+  line-height:2; letter-spacing:0.04em;
+  margin-bottom:16px; opacity:0.9;
+}
+
+.overlay .tag {
+  font-size:0.62rem; letter-spacing:0.08em;
+  border-radius:8px; padding:6px 14px;
+  display:inline-block; margin-bottom:20px;
+  font-weight:700;
+}
+
+.btn-again {
+  background:transparent;
+  border:2px solid var(--accent);
+  border-radius:10px; color:var(--accent);
+  font-family:'Noto Sans SC',sans-serif;
+  font-weight:700; font-size:0.75rem;
+  letter-spacing:0.1em;
+  padding:10px 26px; cursor:pointer; transition:all 0.2s;
+  box-shadow:0 0 0 0 rgba(0,229,192,0);
+}
+.btn-again:hover {
+  background:var(--accent); color:#0d1f2d;
+  box-shadow:0 0 20px rgba(0,229,192,0.35);
+}
+
+/* Particles */
+.particles { position:fixed; inset:0; pointer-events:none; z-index:99; }
+.particle {
+  position:absolute; font-size:1rem;
+  animation:pfall linear forwards;
+}
+@keyframes pfall {
+  0%   { transform:translateY(-30px) rotate(0deg) scale(1); opacity:1; }
+  80%  { opacity:1; }
+  100% { transform:translateY(100vh) rotate(400deg) scale(0.5); opacity:0; }
+}
+
+/* Mobile: stack vertically when narrow */
+@media (max-width: 420px) {
+  .game-area {
+    flex-direction:column;
+    align-items:center;
+  }
+  .panel {
+    flex-direction:row;
+    flex-wrap:wrap;
+    max-width:100%;
+    width:100%;
+    justify-content:center;
+    gap:8px;
+  }
+  .info-box, .triggers-box, .steps-box { flex:1; min-width:120px; max-width:160px; }
+  .dpad { max-width:140px; }
+  .btn-restart, .status-bar { width:100%; max-width:300px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <header>
+    <h1>🌊 我的迷宫</h1>
+    <p>出口不止一个方向</p>
+  </header>
+
+  <div class="game-area">
+    <div class="canvas-wrap">
+      <canvas id="c"></canvas>
+    </div>
+
+    <div class="panel">
+      <div class="steps-box">
+        <div class="slabel">步数</div>
+        <div class="sval" id="stepsVal">0</div>
+      </div>
+
+      <div class="info-box">
+        <span class="title">🎮 怎么玩</span>
+        走到 <span style="color:var(--accent3)">🌺</span> 出口<br>
+        …或者发现<br>
+        <span style="color:var(--accent2);font-weight:700">隐藏的飞行</span>
+      </div>
+
+      <div class="triggers-box">
+        <span class="title">🔮 神秘彩蛋</span>
+        <div class="trigger-row"><div class="trigger-dot" id="d1"></div>停留等待…</div>
+        <div class="trigger-row"><div class="trigger-dot" id="d2"></div>左右徘徊…</div>
+        <div class="trigger-row"><div class="trigger-dot" id="d3"></div>一直撞墙…</div>
+        <div class="trigger-row"><div class="trigger-dot" id="d4"></div>向上张望…</div>
+        <div class="trigger-row"><div class="trigger-dot" id="d5"></div>使劲一推…</div>
+      </div>
+
+      <div class="dpad">
+        <div class="dpad-btn empty"></div>
+        <button class="dpad-btn" id="bu">↑</button>
+        <div class="dpad-btn empty"></div>
+        <button class="dpad-btn" id="bl">←</button>
+        <div class="dpad-btn empty"></div>
+        <button class="dpad-btn" id="br">→</button>
+        <div class="dpad-btn empty"></div>
+        <button class="dpad-btn" id="bd">↓</button>
+        <div class="dpad-btn empty"></div>
+      </div>
+
+      <button class="btn-restart" id="btnRestart">重新开始</button>
+      <div class="status-bar" id="status">找找出口，或者飞出去 ✨</div>
+    </div>
+  </div>
+</div>
+
+<!-- Win overlay -->
+<div class="overlay" id="overlay">
+  <div class="particles" id="particles"></div>
+  <div class="overlay-inner">
+    <div class="big-emoji" id="winEmoji">🦋</div>
+    <h2 id="winTitle" style="color:var(--accent)">你飞出去了！</h2>
+    <p id="winMsg">迷宫的墙，没有我们想象中那么高。<br><strong>你有自己的翅膀。</strong></p>
+    <div class="tag" id="winTag">✨ 你发现了隐藏的出口</div>
+    <button class="btn-again" id="btnAgain">再玩一次</button>
+  </div>
+</div>
+
+<script>
+// ── Maze setup ──
+const COLS=13, ROWS=13;
+let CS=28; // cell size, recalculated on resize
+
+const RAW=[
+  [1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,0,0,0,1,0,0,0,0,0,1,0,1],
+  [1,0,1,0,1,0,1,1,1,0,1,0,1],
+  [1,0,1,0,0,0,0,0,1,0,0,0,1],
+  [1,0,1,1,1,1,1,0,1,1,1,0,1],
+  [1,0,0,0,0,0,1,0,0,0,1,0,1],
+  [1,1,1,0,1,0,1,1,1,0,1,0,1],
+  [1,0,0,0,1,0,0,0,0,0,1,0,1],
+  [1,0,1,1,1,1,1,1,1,0,1,0,1],
+  [1,0,0,0,0,0,0,0,1,0,0,0,1],
+  [1,1,1,0,1,1,1,0,1,1,1,0,1],
+  [1,0,0,0,1,0,0,0,0,0,0,0,1],
+  [1,1,1,1,1,1,1,1,1,1,1,0,1],
+];
+const EXIT={x:11,y:12};
+RAW[EXIT.y][EXIT.x]=0;
+
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+
+function resizeCanvas() {
+  // fit canvas to available space
+  const maxW = Math.min(window.innerWidth - 170, 340);
+  const maxH = window.innerHeight - 160;
+  CS = Math.floor(Math.min(maxW/COLS, maxH/ROWS));
+  CS = Math.max(CS, 18);
+  canvas.width  = COLS*CS;
+  canvas.height = ROWS*CS;
+}
+
+resizeCanvas();
+window.addEventListener('resize', ()=>{ resizeCanvas(); });
+
+// ── Game state ──
+let px=1,py=1,steps=0,gameActive=true;
+let trail=[];
+let flying=false, flyY=0;
+let stuckCount=0;
+let lrSeq=[];
+let wallBumps=0,lastBumpDir=null;
+let longPressTimer=null,longPressDuration=0,charging=false;
+
+const WIN_DATA = {
+  normal: {
+    emoji:'🌺', color:'#ff6b6b',
+    title:'找到出口了！',
+    msg:'你走过每一条路，<br>找到了属于你的出口。<br><br><strong>坚持走下去的人，终会到达。</strong>',
+    tag:'🚪 正规出口达成'
+  },
+  stuck: {
+    emoji:'⏸', color:'#7dd3fc',
+    title:'停留的力量',
+    msg:'你选择停下来等待，<br>而不是盲目乱跑。<br><br><strong>有时候，停下来才是最勇敢的一步。</strong>',
+    tag:'⏳ 静待花开'
+  },
+  lr: {
+    emoji:'🌀', color:'#a78bfa',
+    title:'徘徊中的顿悟',
+    msg:'你在迷茫中来回摇摆，<br>却在徘徊里发现了新方向。<br><br><strong>困惑不是终点，是转机的开始。</strong>',
+    tag:'🔄 左右逢源'
+  },
+  bump: {
+    emoji:'🧱', color:'#ffb347',
+    title:'撞墙的勇气',
+    msg:'你一次次撞向那堵墙，<br>没有放弃，没有绕路。<br><br><strong>坚持撞的人，终会看见墙倒下。</strong>',
+    tag:'💥 以柔克刚'
+  },
+  up: {
+    emoji:'🦅', color:'#00e5c0',
+    title:'抬头看见了天',
+    msg:'别人都在低头找路，<br>你选择了抬头望天。<br><br><strong>迷宫的墙，从上面看根本不算什么。</strong>',
+    tag:'👆 高处不胜寒'
+  },
+  long: {
+    emoji:'💫', color:'#ff6b6b',
+    title:'蓄力突破！',
+    msg:'你积蓄了所有的力量，<br>在最后一刻全力爆发。<br><br><strong>迷宫的墙，没有我们想象中那么高。<br>你有自己的翅膀。</strong>',
+    tag:'⚡ 破壁飞翔'
+  },
+};
+
+function showWinOverlay(how) {
+  const d = WIN_DATA[how] || WIN_DATA.normal;
+  document.getElementById('winEmoji').textContent = d.emoji;
+  document.getElementById('winTitle').style.color = d.color;
+  document.getElementById('winTitle').textContent = d.title;
+  document.getElementById('winMsg').innerHTML = d.msg;
+  document.getElementById('winTag').textContent = d.tag;
+  document.getElementById('winTag').style.background = d.color+'22';
+  document.getElementById('winTag').style.color = d.color;
+  spawnParticles(d.color);
+  setTimeout(()=>document.getElementById('overlay').classList.add('show'),300);
+}
+
+function resetGame() {
+  px=1;py=1;steps=0;gameActive=true;
+  trail=[{x:1,y:1}];
+  flying=false;flyY=0;
+  stuckCount=0;lrSeq=[];wallBumps=0;lastBumpDir=null;
+  longPressDuration=0;charging=false;
+  document.getElementById('stepsVal').textContent='0';
+  document.getElementById('overlay').classList.remove('show');
+  [1,2,3,4,5].forEach(i=>document.getElementById('d'+i).classList.remove('active'));
+  ['bu','bl','br','bd'].forEach(id=>document.getElementById(id).classList.remove('charging'));
+  setStatus('找找出口，或者飞出去 ✨','');
+}
+
+function setStatus(msg,cls) {
+  const el=document.getElementById('status');
+  el.textContent=msg;
+  el.className='status-bar'+(cls?' '+cls:'');
+}
+
+function isWall(x,y) {
+  if(x<0||x>=COLS||y<0||y>=ROWS) return true;
+  return RAW[y][x]===1;
+}
+
+function tryMove(dx,dy,dir) {
+  if(!gameActive||flying) return;
+  const nx=px+dx, ny=py+dy;
+  if(!isWall(nx,ny)) {
+    px=nx; py=ny; steps++;
+    document.getElementById('stepsVal').textContent=steps;
+    trail.push({x:px,y:py});
+    if(trail.length>35) trail.shift();
+    stuckCount=0;
+    if(px===EXIT.x&&py===EXIT.y){ triggerWin('normal'); return; }
+    // LR check
+    if(dir==='l'||dir==='r'){
+      lrSeq.push(dir);
+      if(lrSeq.length>8) lrSeq.shift();
+      if(lrSeq.length>=6){
+        let alt=true;
+        for(let i=1;i<lrSeq.length;i++) if(lrSeq[i]===lrSeq[i-1]){alt=false;break;}
+        if(alt){ document.getElementById('d2').classList.add('active'); triggerWin('lr'); return; }
+      }
+    } else { lrSeq=[]; }
+    if(dir!==lastBumpDir){ wallBumps=0; lastBumpDir=null; }
+  } else {
+    stuckCount=0;
+    if(dir===lastBumpDir){
+      wallBumps++;
+      if(wallBumps>=3){ document.getElementById('d3').classList.add('active'); triggerWin('bump'); return; }
+    } else { wallBumps=1; lastBumpDir=dir; }
+  }
+}
+
+function handleUp() {
+  if(!gameActive||flying) return;
+  if(steps<5){ setStatus('再走走看…','warn'); return; }
+  document.getElementById('d4').classList.add('active');
+  setStatus('抬头看见了天空…','fly');
+  setTimeout(()=>{ if(gameActive) triggerWin('up'); },500);
+}
+
+function triggerWin(how) {
+  if(!gameActive) return;
+  gameActive=false; flying=true;
+  flyY=py*CS;
+  const flyAnim=setInterval(()=>{
+    flyY-=5;
+    if(flyY<-(CS*3)){ clearInterval(flyAnim); showWinOverlay(how); }
+  },16);
+}
+
+function spawnParticles(color) {
+  const cont=document.getElementById('particles');
+  cont.innerHTML='';
+  const emojis=['🌊','✨','🦋','🌺','💫','🌈','⭐','🎉'];
+  for(let i=0;i<50;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    p.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    p.style.left=Math.random()*100+'vw';
+    p.style.top='-40px';
+    p.style.animationDuration=(2+Math.random()*2.5)+'s';
+    p.style.animationDelay=(Math.random()*1.2)+'s';
+    cont.appendChild(p);
+  }
+}
+
+// stuck timer
+setInterval(()=>{
+  if(!gameActive||flying) return;
+  stuckCount++;
+  if(stuckCount===200) setStatus('感觉到什么了…','warn');
+  if(stuckCount===240){
+    document.getElementById('d1').classList.add('active');
+    triggerWin('stuck');
+  }
+},16);
+
+// ── Long press ──
+function startLongPress(el) {
+  longPressDuration=0; charging=true;
+  el.classList.add('charging');
+  longPressTimer=setInterval(()=>{
+    if(!gameActive){clearLongPress(el);return;}
+    longPressDuration++;
+    if(longPressDuration===6) setStatus('力量在积聚…','warn');
+    if(longPressDuration>=12){
+      document.getElementById('d5').classList.add('active');
+      clearLongPress(el); triggerWin('long');
+    }
+  },100);
+}
+function clearLongPress(el) {
+  clearInterval(longPressTimer); longPressTimer=null;
+  longPressDuration=0; charging=false;
+  if(el) el.classList.remove('charging');
+}
+
+// ── Draw ──
+const SUMMER={
+  floor:'#0c1e2e',
+  wall1:'#0e6b5e',
+  wall2:'#14998a',
+  wallTop:'rgba(0,229,192,0.15)',
+  trail:'rgba(0,229,192,0.12)',
+  playerNorm:'🐠',
+  playerFly:'🦅',
+  exit:'🌺',
+};
+
+function roundRect(x,y,w,h,r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function draw() {
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=SUMMER.floor;
+  ctx.fillRect(0,0,W,H);
+
+  // scanlines effect
+  ctx.fillStyle='rgba(0,0,0,0.04)';
+  for(let y=0;y<H;y+=3){ ctx.fillRect(0,y,W,1); }
+
+  // trail
+  trail.forEach((t,i)=>{
+    ctx.globalAlpha=(i/trail.length)*0.45;
+    ctx.fillStyle=SUMMER.trail;
+    ctx.beginPath();
+    ctx.arc(t.x*CS+CS/2,t.y*CS+CS/2,CS/2-5,0,Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha=1;
+
+  // walls
+  for(let r=0;r<ROWS;r++){
+    for(let co=0;co<COLS;co++){
+      if(RAW[r][co]===1){
+        const x=co*CS, y=r*CS, p=2, rad=4;
+        const g=ctx.createLinearGradient(x,y,x,y+CS);
+        g.addColorStop(0,SUMMER.wall2); g.addColorStop(1,SUMMER.wall1);
+        ctx.fillStyle=g;
+        roundRect(x+p,y+p,CS-p*2,CS-p*2,rad); ctx.fill();
+        // top highlight
+        ctx.fillStyle=SUMMER.wallTop;
+        roundRect(x+p,y+p,CS-p*2,5,2); ctx.fill();
+      }
+    }
+  }
+
+  // exit glow + emoji
+  const ex=EXIT.x*CS, ey=EXIT.y*CS;
+  const t=Date.now()/800;
+  ctx.globalAlpha=0.25+0.15*Math.sin(t);
+  ctx.fillStyle='#ff6b6b';
+  ctx.beginPath(); ctx.arc(ex+CS/2,ey+CS/2,CS*0.75,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.font=`${CS-4}px serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(SUMMER.exit,ex+CS/2,ey+CS/2);
+
+  // player
+  const drawX=px*CS+CS/2;
+  const drawY=flying ? flyY+CS/2 : py*CS+CS/2;
+
+  if(charging){
+    const pulse=0.4+0.5*Math.abs(Math.sin(Date.now()/120));
+    ctx.globalAlpha=pulse*0.5;
+    ctx.fillStyle='#ffb347';
+    ctx.beginPath(); ctx.arc(drawX,drawY,CS*0.8,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=1;
+  }
+
+  ctx.font=`${CS-2}px serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(flying?SUMMER.playerFly:SUMMER.playerNorm, drawX, drawY);
+}
+
+function loop(){ draw(); requestAnimationFrame(loop); }
+
+// ── Keyboard ──
+const heldKeys={};
+document.addEventListener('keydown',e=>{
+  if(heldKeys[e.key]) return;
+  heldKeys[e.key]=true;
+  if(e.key==='ArrowLeft')  { tryMove(-1,0,'l'); e.preventDefault(); }
+  if(e.key==='ArrowRight') { tryMove( 1,0,'r'); e.preventDefault(); }
+  if(e.key==='ArrowDown')  { tryMove( 0,1,'d'); e.preventDefault(); }
+  if(e.key==='ArrowUp')    { handleUp();         e.preventDefault(); }
+});
+document.addEventListener('keyup',e=>{ heldKeys[e.key]=false; });
+
+// ── D-pad ──
+function bindDpad(id, onTap, withLong) {
+  const el=document.getElementById(id);
+  let pressTimer=null, isLong=false;
+
+  const down=e=>{
+    e.preventDefault(); isLong=false;
+    el.classList.add('pressed');
+    if(withLong){
+      pressTimer=setTimeout(()=>{ isLong=true; startLongPress(el); },500);
+    }
+  };
+  const up=e=>{
+    e.preventDefault();
+    clearTimeout(pressTimer);
+    el.classList.remove('pressed');
+    if(!isLong) onTap();
+    else clearLongPress(el);
+    isLong=false;
+  };
+
+  el.addEventListener('touchstart',down,{passive:false});
+  el.addEventListener('mousedown', down);
+  el.addEventListener('touchend',  up,{passive:false});
+  el.addEventListener('mouseup',   up);
+  el.addEventListener('mouseleave',up);
+}
+
+bindDpad('bl',()=>tryMove(-1,0,'l'),true);
+bindDpad('br',()=>tryMove( 1,0,'r'),true);
+bindDpad('bd',()=>tryMove( 0,1,'d'),true);
+bindDpad('bu',handleUp,false);
+
+document.getElementById('btnRestart').addEventListener('click',resetGame);
+document.getElementById('btnAgain').addEventListener('click',resetGame);
+
+resetGame();
+loop();
+</script>
+</body>
+</html>
